@@ -1,0 +1,22 @@
+.wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 100px; }
+.loading { padding: 60px 16px; text-align: center; color: var(--zooli-ink-500); }
+.header { display: flex; gap: 14px; align-items: center; margin-bottom: 8px; }
+.headerThumb { width: 56px; height: 56px; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--zooli-violet-500), var(--zooli-violet-700)); color: white; font-family: var(--font-display); font-size: 24px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; }
+.name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--zooli-ink-900); margin: 0; }
+.meta { font-size: 13px; color: var(--zooli-ink-500); margin: 2px 0 0; }
+.closed { color: #DC2626; font-weight: 600; }
+.signinBanner { background: var(--zooli-gold-100); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; margin: 16px 0; }
+.signinBanner a { color: var(--zooli-violet-700); font-weight: 700; text-decoration: underline; }
+.grid { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.item { display: flex; gap: 12px; background: var(--zooli-paper-0); border: 1px solid var(--zooli-line-200); border-radius: var(--radius-md); padding: 12px; }
+.itemThumb { width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--zooli-violet-50); color: var(--zooli-violet-600); font-weight: 700; display: grid; place-items: center; flex-shrink: 0; }
+.itemBody { flex: 1; min-width: 0; }
+.itemName { font-size: 14px; font-weight: 700; color: var(--zooli-ink-900); }
+.itemDesc { font-size: 12px; color: var(--zooli-ink-500); margin-top: 2px; }
+.itemBottom { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.price { font-size: 14px; font-weight: 700; color: var(--zooli-ink-900); }
+.unit { font-size: 11px; font-weight: 400; color: var(--zooli-ink-500); }
+.addBtn { background: var(--zooli-violet-600); color: white; border: none; border-radius: var(--radius-pill); padding: 7px 16px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.addBtn:disabled { background: var(--zooli-line-200); color: var(--zooli-ink-500); cursor: default; }
+.empty { text-align: center; color: var(--zooli-ink-500); padding: 40px 0; }
+.cartBar { position: fixed; bottom: 16px; left: 16px; right: 16px; max-width: 688px; margin: 0 auto; background: var(--zooli-violet-700); color: white; border-radius: var(--radius-md); padding: 14px 20px; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; box-shadow: var(--shadow-lg); text-decoration: none; }

@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+# builds
+.next/
+out/
+dist/
+*.tsbuildinfo
+.turbo/
+.vercel/
+# secrets — never commit real keys
+.env
+.env.local
+.env.*.local
+# mobile
+apps/mobile/.expo/
+# misc
+.DS_Store
+npm-debug.log*

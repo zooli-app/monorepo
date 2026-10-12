@@ -1,0 +1,183 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: linear-gradient(180deg, var(--zooli-violet-700) 0%, var(--zooli-violet-600) 100%);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Top bar ────────────────────────────────────────────────── */
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 72px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.logoPlate {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 4px 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.logoMark {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--zooli-paper-0);
+  letter-spacing: 0.01em;
+}
+
+.wordmarkSub {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--zooli-gold-300);
+  margin-top: 3px;
+}
+
+.locationButton {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding-inline: 12px;
+  border: 1.5px solid rgba(255,255,255,0.28);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.08);
+  color: var(--zooli-paper-0);
+  max-width: 200px;
+  transition: background var(--duration-fast) var(--ease-out-soft);
+}
+.locationButton:hover { background: rgba(255,255,255,0.16); }
+
+.locationPin { width: 18px; height: 18px; flex: none; color: var(--zooli-gold-300); }
+
+.locationText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.locationLabel { font-size: 10px; color: var(--zooli-violet-100); }
+
+.locationValue {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.locationChevron { width: 14px; height: 14px; flex: none; color: var(--zooli-violet-100); }
+
+.searchSlot { flex: 1; min-width: 0; max-width: 600px; }
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.languageButton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--zooli-paper-0);
+  transition: background var(--duration-fast) var(--ease-out-soft);
+}
+.languageButton:hover { background: rgba(255,255,255,0.12); }
+.languageIcon { width: 20px; height: 20px; }
+
+.accountButton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--zooli-gold-500);
+  color: var(--zooli-violet-700);
+  margin-left: 4px;
+}
+.accountButton svg { width: 20px; height: 20px; }
+
+/* ── Mobile search row (hidden on desktop) ───────────────────── */
+.mobileSearchRow {
+  display: none;
+  padding-bottom: 10px;
+}
+
+/* ── Category strip ──────────────────────────────────────────── */
+.subNavWrap { background: var(--zooli-violet-900); }
+
+.subNav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 42px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subNav::-webkit-scrollbar { display: none; }
+
+.subNavLink {
+  flex: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--zooli-violet-100);
+  white-space: nowrap;
+  padding-block: 4px;
+  border-bottom: 2px solid transparent;
+  transition: color var(--duration-fast) var(--ease-out-soft),
+              border-color var(--duration-fast) var(--ease-out-soft);
+}
+.subNavLink:hover {
+  color: var(--zooli-paper-0);
+  border-bottom-color: var(--zooli-gold-500);
+}
+
+/* ── Mobile breakpoints ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .locationButton { display: none; }
+  .searchSlot { display: none; }
+  .languageButton { display: none; }
+  .wordmarkSub { display: none; }
+  .mobileSearchRow { display: block; }
+  .topBar { height: 58px; gap: 12px; }
+  .actions { gap: 2px; }
+}
+
+@media (max-width: 480px) {
+  .wordmark { font-size: 1.2rem; }
+  .logoMark { height: 32px; }
+}

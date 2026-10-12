@@ -1,0 +1,233 @@
+.hero {
+  background: var(--zooli-violet-700);
+  background-image: radial-gradient(circle at 12% -10%, rgba(255, 194, 34, 0.18), transparent 45%),
+    linear-gradient(150deg, var(--zooli-violet-700) 0%, var(--zooli-violet-900) 100%);
+  padding-block: 64px 88px;
+  overflow: hidden;
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 440px;
+  align-items: center;
+  gap: 48px;
+}
+
+.copy {
+  color: var(--zooli-paper-0);
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--zooli-gold-300);
+  margin-bottom: 14px;
+}
+
+.heading {
+  font-size: clamp(2.5rem, 3.2vw, var(--text-3xl));
+  line-height: 1.06;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 20px;
+}
+
+.subcopy {
+  font-size: var(--text-md);
+  line-height: 1.6;
+  color: var(--zooli-violet-100);
+  max-width: 540px;
+  margin-bottom: 32px;
+}
+
+.ctaRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 44px;
+}
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+  padding-inline: 26px;
+  background: var(--zooli-gold-500);
+  color: var(--zooli-maroon-700);
+  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--duration-fast) var(--ease-out-soft), box-shadow var(--duration-fast) var(--ease-out-soft);
+}
+
+.ctaPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.ctaIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  height: 54px;
+  padding-inline: 24px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  color: var(--zooli-paper-0);
+  font-weight: 700;
+  font-family: var(--font-display);
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-fast) var(--ease-out-soft);
+}
+
+.ctaSecondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.statRow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin: 0;
+}
+
+.stat dt {
+  font-size: var(--text-xs);
+  color: var(--zooli-violet-100);
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.stat dd {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--zooli-paper-0);
+}
+
+.statDivider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.visual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wheelStage {
+  position: relative;
+  width: 380px;
+  height: 380px;
+}
+
+.orbitChip {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--zooli-paper-0);
+  border-radius: var(--radius-pill);
+  padding: 8px 16px 8px 8px;
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--zooli-ink-900);
+}
+
+.orbitIcon {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--zooli-gold-100);
+  color: var(--zooli-violet-600);
+}
+
+.orbitTop {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.orbitRight {
+  top: 50%;
+  right: -28px;
+  transform: translateY(-50%);
+}
+
+.orbitBottom {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.orbitLeft {
+  top: 50%;
+  left: -28px;
+  transform: translateY(-50%);
+}
+
+.statusCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-lg);
+  max-width: 320px;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--zooli-leaf-600);
+  flex: none;
+  box-shadow: 0 0 0 4px var(--zooli-leaf-100);
+}
+
+.statusTitle {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--zooli-ink-900);
+}
+
+.statusMeta {
+  font-size: var(--text-xs);
+  color: var(--zooli-ink-500);
+  margin-top: 2px;
+}
+
+@media (max-width: 1080px) {
+  .inner {
+    grid-template-columns: 1fr;
+  }
+
+  .visual {
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero { padding-block: 32px 48px; }
+  .inner { grid-template-columns: 1fr; gap: 32px; }
+  .heading { font-size: 2rem; }
+  .subcopy { font-size: var(--text-base); }
+  .ctaRow { flex-wrap: wrap; }
+  .visual { display: none; }
+  .statRow { flex-wrap: wrap; gap: 16px; }
+}

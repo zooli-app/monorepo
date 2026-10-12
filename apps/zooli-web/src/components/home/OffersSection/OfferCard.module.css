@@ -1,0 +1,76 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 168px;
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  color: var(--zooli-paper-0);
+  transition: transform var(--duration-base) var(--ease-out-soft), box-shadow var(--duration-base) var(--ease-out-soft);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  right: -40px;
+  bottom: -50px;
+}
+
+.card[data-accent='gold'] {
+  background: linear-gradient(135deg, #ff9d2f, #e6740b);
+}
+
+.card[data-accent='leaf'] {
+  background: linear-gradient(135deg, #2bab66, #1a7a47);
+}
+
+.card[data-accent='sky'] {
+  background: linear-gradient(135deg, #2f8cf2, #1565d8);
+}
+
+.card[data-accent='violet'] {
+  background: linear-gradient(135deg, var(--zooli-violet-500), var(--zooli-violet-700));
+}
+
+.badgeLabel {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 80%;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  width: fit-content;
+}
+
+.ctaIcon {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--duration-fast) var(--ease-out-soft);
+}
+
+.card:hover .ctaIcon {
+  transform: translateX(3px);
+}

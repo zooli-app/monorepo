@@ -1,0 +1,8 @@
+{
+  "name": "@zooli/vendor-forms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vendor registration form definitions + validation, shared by zooli-vendor (UI), zooli-admin (review) and apps/api (server-side validation).",
+  "main": "src/index.ts",
+  "exports": { ".": "./src/index.ts" }
+}

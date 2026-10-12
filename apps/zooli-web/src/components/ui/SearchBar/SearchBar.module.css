@@ -1,0 +1,60 @@
+.form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  padding-inline: 18px;
+  background: var(--zooli-paper-0);
+  border: 1.5px solid var(--zooli-line-200);
+  border-radius: var(--radius-pill);
+  transition: border-color var(--duration-fast) var(--ease-out-soft), box-shadow var(--duration-fast) var(--ease-out-soft);
+}
+
+.form:focus-within {
+  border-color: var(--zooli-violet-500);
+  box-shadow: 0 0 0 4px var(--zooli-violet-100);
+}
+
+.searchIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--zooli-ink-500);
+  flex: none;
+}
+
+.input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--zooli-ink-900);
+}
+
+.input::placeholder {
+  color: var(--zooli-ink-300);
+}
+
+.micButton {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--zooli-violet-50);
+  color: var(--zooli-violet-600);
+  transition: background var(--duration-fast) var(--ease-out-soft);
+}
+
+.micButton:hover {
+  background: var(--zooli-violet-100);
+}
+
+.micIcon {
+  width: 16px;
+  height: 16px;
+}

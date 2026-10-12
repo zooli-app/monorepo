@@ -1,0 +1,13 @@
+{
+  "name": "@zooli/tokens",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tailwind.preset": "./tailwind.preset.js",
+    "./tokens.json": "./src/tokens.json",
+    "./tokens.css": "./src/tokens.css",
+    "./theme.native": "./src/theme.native.ts"
+  }
+}

@@ -1,0 +1,31 @@
+.section {
+  padding-block: 64px 16px;
+}
+
+.heading {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  margin-top: 10px;
+  color: var(--zooli-ink-900);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .section { padding-block: 36px 12px; }
+  .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .title { font-size: var(--text-lg); }
+}

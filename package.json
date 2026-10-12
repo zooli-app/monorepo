@@ -1,0 +1,17 @@
+{
+  "name": "zooli",
+  "private": true,
+  "workspaces": [
+    "apps/zooli-web",
+    "apps/zooli-vendor",
+    "apps/zooli-admin",
+    "apps/api",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w zooli-web",
+    "dev:vendor": "npm run dev -w zooli-vendor",
+    "dev:admin": "npm run dev -w zooli-admin",
+    "dev:api": "npm run dev -w zooli-api"
+  }
+}

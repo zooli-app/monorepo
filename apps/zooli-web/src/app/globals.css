@@ -1,0 +1,192 @@
+/* ==========================================================================
+   Zooli Design Tokens
+   A multi-service everyday-needs platform. The palette is pulled directly
+   from the brand mark: violet + marigold gold, with a deep maroon for
+   high-emphasis text, set against a barely-tinted lavender-white canvas.
+   ========================================================================== */
+
+:root {
+  /* ---- Color: brand ---- */
+  --zooli-violet-900: #2E1065;
+  --zooli-violet-700: #5B21B6;
+  --zooli-violet-600: #6D28D9;
+  --zooli-violet-500: #7C3AED;
+  --zooli-violet-100: #EDE3FB;
+  --zooli-violet-50: #F6F1FD;
+
+  --zooli-gold-600: #E6A700;
+  --zooli-gold-500: #FFC222;
+  --zooli-gold-300: #FFDD80;
+  --zooli-gold-100: #FFF4D6;
+
+  --zooli-maroon-700: #6E1029;
+  --zooli-maroon-600: #8A1538;
+
+  --zooli-leaf-600: #1E8A4C;
+  --zooli-leaf-100: #DFF5E7;
+
+  --zooli-sky-600: #1565D8;
+  --zooli-sky-100: #E1ECFE;
+
+  /* ---- Color: neutrals ---- */
+  --zooli-ink-900: #1A1530;
+  --zooli-ink-700: #3B3354;
+  --zooli-ink-500: #6B6280;
+  --zooli-ink-300: #A79FBC;
+  --zooli-paper-0: #FFFFFF;
+  --zooli-paper-50: #FBF9FE;
+  --zooli-paper-100: #F3EFFA;
+  --zooli-line-200: #E6E0F2;
+  --zooli-line-100: #EFEAF8;
+
+  /* ---- Typography ---- */
+  --font-display: var(--font-baloo), 'Baloo 2', system-ui, sans-serif;
+  --font-body: var(--font-manrope), 'Manrope', system-ui, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.25rem;
+  --text-3xl: 3rem;
+
+  /* ---- Layout ---- */
+  --content-max-width: 1280px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  /* ---- Elevation ---- */
+  --shadow-sm: 0 1px 2px rgba(26, 21, 48, 0.06), 0 1px 1px rgba(26, 21, 48, 0.04);
+  --shadow-md: 0 8px 24px rgba(46, 16, 101, 0.10);
+  --shadow-lg: 0 20px 48px rgba(46, 16, 101, 0.16);
+  --shadow-card-hover: 0 14px 30px rgba(91, 33, 182, 0.18);
+
+  /* ---- Motion ---- */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--zooli-paper-50);
+  color: var(--zooli-ink-900);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  margin: 0;
+  color: var(--zooli-ink-900);
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 3px solid var(--zooli-gold-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.zooli-container {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: 32px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Responsive breakpoints (mobile-first) ─────────────────────────── */
+/* Use these inside component CSS modules via @media */
+/* xs  < 480px   — small phones               */
+/* sm  < 640px   — phones                     */
+/* md  < 768px   — large phone / small tablet */
+/* lg  < 1024px  — tablet                     */
+/* xl  < 1280px  — laptop                     */
+
+.zooli-container {
+  padding-inline: clamp(16px, 4vw, 32px);
+}
+
+/* Page content shell used by every inner page */
+.page-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-shell main {
+  flex: 1;
+}
+
+/* Body gets bottom padding on mobile to clear fixed nav */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 64px;
+  }
+}

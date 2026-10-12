@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Zooli",
+    "slug": "zooli",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "zooli",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.zooli.app" },
+    "android": {
+      "package": "com.zooli.app",
+      "adaptiveIcon": { "backgroundColor": "#7C3AED" }
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "extra": {
+      "router": { "origin": false }
+    }
+  }
+}
