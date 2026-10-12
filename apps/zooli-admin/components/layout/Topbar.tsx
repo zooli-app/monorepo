@@ -1,6 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import type { VendorApplicationSummary } from "@zooli/api-client";
+import { api } from "@/lib/api";
+import { timeAgo } from "@/lib/utils";
 import {
   Menu, Calendar, Search, Bell, Maximize2, ChevronDown,
   Shield, Settings, LogOut, User, KeyRound,
@@ -27,13 +31,6 @@ const PAGE_TITLES: Record<string, { title: string; sub: string }> = {
   "/settings/system":        { title: "System Management",        sub: "System health & monitoring" },
 };
 
-const NOTIFS = [
-  { emoji: "🏪", text: "New vendor registration", sub: "Paradise Biryani, Kukatpally", time: "2 min ago",  bg: "bg-green-100" },
-  { emoji: "🛍️", text: "New order received",       sub: "Order #OR125689",              time: "5 min ago",  bg: "bg-blue-100" },
-  { emoji: "💰", text: "Payout processed",         sub: "₹2,45,680 to 42 vendors",     time: "15 min ago", bg: "bg-purple-100" },
-  { emoji: "⚠️", text: "New complaint received",   sub: "Order #OR125012",              time: "20 min ago", bg: "bg-red-100" },
-  { emoji: "🔔", text: "System update",            sub: "App version 2.4.1 released",   time: "1 hr ago",   bg: "bg-amber-100" },
-];
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname  = usePathname();
@@ -41,6 +38,11 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const page      = PAGE_TITLES[pathname] ?? { title: "Zooli Admin", sub: "Super Admin Panel" };
 
   const [showNotif,   setShowNotif]   = useState(false);
+  // Real notifications: vendor applications waiting for review
+  const [pending, setPending] = useState<VendorApplicationSummary[]>([]);
+  useEffect(() => {
+    api.admin.applications({ status: "pending" }).then((r) => setPending(r.applications)).catch(() => setPending([]));
+  }, [pathname]);
   const [showProfile, setShowProfile] = useState(false);
 
   const notifRef   = useRef<HTMLDivElement>(null);
@@ -107,33 +109,33 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
             className="relative text-gray-500 hover:text-gray-700 p-2 rounded-xl hover:bg-gray-100 transition-colors"
           >
             <Bell size={18} />
-            <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-              12
-            </span>
+            {pending.length > 0 && (
+              <span className="absolute top-1 right-1 min-w-4 h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                {pending.length > 99 ? "99+" : pending.length}
+              </span>
+            )}
           </button>
 
           {showNotif && (
             <div className="absolute right-0 top-11 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
                 <span className="text-sm font-semibold text-gray-900">Notifications</span>
-                <button className="text-xs text-purple-600 font-semibold hover:underline">Mark all read</button>
               </div>
               <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
-                {NOTIFS.map((n, i) => (
-                  <div key={i} className="flex gap-3 px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer">
-                    <div className={`w-8 h-8 rounded-lg ${n.bg} flex items-center justify-center text-sm flex-shrink-0`}>
-                      {n.emoji}
-                    </div>
+                {pending.length === 0 && <div className="px-4 py-8 text-center text-xs text-gray-400">You&apos;re all caught up — no new notifications.</div>}
+                {pending.slice(0, 8).map((n) => (
+                  <Link key={n.id} href="/applications" onClick={() => setShowNotif(false)} className="flex gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-sm flex-shrink-0">🏪</div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-gray-800">{n.text}</div>
-                      <div className="text-[11px] text-gray-400 truncate">{n.sub}</div>
+                      <div className="text-xs font-semibold text-gray-800">New vendor application</div>
+                      <div className="text-[11px] text-gray-400 truncate">{n.business_name || n.applicant_name} · {n.reference}</div>
                     </div>
-                    <div className="text-[10px] text-gray-400 flex-shrink-0 whitespace-nowrap">{n.time}</div>
-                  </div>
+                    <div className="text-[10px] text-gray-400 flex-shrink-0 whitespace-nowrap">{timeAgo(n.created_at)}</div>
+                  </Link>
                 ))}
               </div>
               <div className="px-4 py-2.5 border-t border-gray-50 text-center">
-                <button className="text-xs text-purple-600 font-semibold hover:underline">View All Notifications</button>
+                <Link href="/applications" onClick={() => setShowNotif(false)} className="text-xs text-purple-600 font-semibold hover:underline">Open vendor applications</Link>
               </div>
             </div>
           )}

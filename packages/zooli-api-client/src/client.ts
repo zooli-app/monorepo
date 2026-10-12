@@ -29,9 +29,22 @@ async function request<T>(
   headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
+  if (!config.baseUrl) {
+    throw new ApiError(0, "NEXT_PUBLIC_API_URL is not set for this app. Add it in the project's environment variables (the deployed API URL) and redeploy.", null);
+  }
   const res = await fetch(`${config.baseUrl}${path}`, { ...init, headers });
   const text = await res.text();
-  const body = text ? JSON.parse(text) : null;
+  let body: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+  try {
+    body = text ? JSON.parse(text) : null;
+  } catch {
+    throw new ApiError(
+      res.status,
+      `The server at ${config.baseUrl} answered with a web page instead of data (HTTP ${res.status}). ` +
+        "Check that NEXT_PUBLIC_API_URL is the deployed API project's URL, that the API deployed successfully, and open <API URL>/api/vendor-applications/config in a browser — it should show JSON.",
+      null,
+    );
+  }
 
   if (!res.ok) {
     throw new ApiError(res.status, (body && body.error) || res.statusText, body);
@@ -189,6 +202,10 @@ export function createApiClient(config: ApiClientConfig) {
           body: JSON.stringify(input),
         }),
       wallets: () => get<{ wallets: AdminWallet[]; totalBalance: number; totalCashback: number }>("/api/admin/wallets"),
+      analytics: (days = 30) => get<AdminAnalytics>(`/api/admin/analytics?days=${days}`),
+      rides: () => get<{ rides: AdminRide[] }>("/api/admin/rides"),
+      drivers: () => get<{ drivers: AdminDriver[] }>("/api/admin/drivers"),
+      transactions: () => get<{ transactions: AdminTransaction[] }>("/api/admin/transactions"),
       applications: (filters: { status?: string; service?: string; q?: string } = {}) => {
         const qs = new URLSearchParams(Object.entries(filters).filter(([, v]) => !!v) as [string, string][]).toString();
         return get<{ applications: VendorApplicationSummary[] }>(`/api/admin/applications${qs ? `?${qs}` : ""}`);
@@ -306,6 +323,28 @@ export interface Ride {
   distance_km: number | null; fare_estimate: number; fare_final: number | null; requested_at: string;
 }
 export interface UploadSignature { timestamp: number; folder: string; signature: string; apiKey?: string; cloudName?: string; params?: Record<string, string | number> }
+export interface AdminAnalytics {
+  days: number;
+  totals: { orders: number; revenue: number; avgOrderValue: number; newUsers: number };
+  daily: { date: string; orders: number; revenue: number; rides: number }[];
+  orderStatus: Record<string, number>;
+  payments: { paid: number; unpaid: number; refunded: number; failed: number };
+  rides: { total: number; byStatus: Record<string, number>; revenue: number };
+  topStores: { id: string; name: string; orders: number; revenue: number }[];
+  userGrowth: { month: string; count: number }[];
+}
+export interface AdminRide extends Ride {
+  customer: { full_name: string | null; phone: string | null } | null;
+  drivers: { vehicle_number: string; vehicle_type: string; profiles: { full_name: string | null; phone: string | null } | null } | null;
+}
+export interface AdminDriver {
+  id: string; vehicle_type: string; vehicle_number: string; is_online: boolean; rating_avg: number; rating_count: number; created_at: string;
+  profiles: { full_name: string | null; phone: string | null } | null;
+}
+export interface AdminTransaction {
+  id: string; amount: number; reason: string; created_at: string;
+  profiles: { full_name: string | null; phone: string | null } | null;
+}
 export interface AdminStats { stores: number; orders: number; users: number; revenue: number }
 export interface AdminUser { id: string; role: string; full_name: string | null; phone: string | null; created_at: string }
 export interface AdminWallet {

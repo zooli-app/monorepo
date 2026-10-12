@@ -364,3 +364,7 @@ Nothing needs an account while the switch says `mock`; flip a word to go live â€
 - There is no Grocery registration form yet (no design was supplied).
 - Document links open in a new tab and expire after 15 minutes; reopen the application panel for fresh ones.
 - Applicants can't re-open a submitted application; admin "Needs more info" currently tells them to contact support rather than letting them edit.
+
+### Admin dashboard data
+
+Every admin page now shows live data (no sample numbers). Dashboard, Analytics, Payments, Ride and Delivery pages read from `GET /api/admin/{stats,analytics,orders,rides,drivers,transactions,wallets}`. "Revenue" means order totals excluding cancelled orders. Where the platform has no data source yet (coupons, vendor payout batches, NPS / app rating / delivery time / retention) the page says so instead of showing placeholder figures. If an admin page can't reach the API it shows the real error, including a hint to check `NEXT_PUBLIC_API_URL`.

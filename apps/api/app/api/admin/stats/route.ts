@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getAuthedUser, requireRole } from "@/lib/auth";
 
-// GET /api/admin/stats — headline numbers for the admin dashboard home.
+// GET /api/admin/stats — headline numbers for the admin dashboard home. Revenue excludes cancelled orders.
 export async function GET(req: NextRequest) {
   const user = await getAuthedUser(req);
   const denied = requireRole(user, "admin");
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     admin.from("stores").select("*", { count: "exact", head: true }),
     admin.from("orders").select("*", { count: "exact", head: true }),
     admin.from("profiles").select("*", { count: "exact", head: true }),
-    admin.from("orders").select("total"),
+    admin.from("orders").select("total").neq("status", "cancelled"),
   ]);
 
   const revenue = (totals ?? []).reduce((sum, o) => sum + Number(o.total), 0);

@@ -1,16 +1,36 @@
-import { ArrowLeftRight } from "lucide-react";
+"use client";
 
-export default function Page() {
+import { PageHeader, SectionCard } from "@/components/shared/PageHeader";
+import { EmptyState, ErrorBox, Pill, Spinner, td, th } from "@/components/shared/ui";
+import { api } from "@/lib/api";
+import { useLoad } from "@/lib/useLoad";
+import { formatCurrencyFull, timeAgo } from "@/lib/utils";
+
+const reasonLabel = (r: string) =>
+  r.startsWith("cashback:order") ? "Order cashback" : r.startsWith("cashback:ride") ? "Ride cashback" : r === "admin_adjustment" ? "Admin adjustment" : r;
+
+export default function TransactionsPage() {
+  const { data, error, loading, reload } = useLoad(() => api.admin.transactions());
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-4 shadow-sm">
-        <ArrowLeftRight size={28} className="text-white" />
-      </div>
-      <h2 className="text-xl font-bold text-gray-900 mb-2">Transactions</h2>
-      <p className="text-gray-400 text-sm max-w-xs">Full transaction history across all payment methods and services.</p>
-      <div className="mt-6 inline-flex items-center gap-2 bg-purple-50 border border-purple-100 text-purple-700 text-xs font-semibold px-4 py-2 rounded-full">
-        🚧 Coming in next sprint
-      </div>
+    <div className="space-y-5">
+      <PageHeader title="Transactions" description="Wallet credits and debits (latest 200)" />
+      {loading && <Spinner />}
+      {error && <ErrorBox error={error} onRetry={reload} />}
+      {data && (
+        <SectionCard noPadding>
+          {data.transactions.length === 0 ? <EmptyState title="No wallet transactions yet" text="Cashback and adjustments will be listed here." /> : (
+            <div className="overflow-x-auto"><table className="w-full">
+              <thead><tr className="border-b border-gray-50"><th className={th}>User</th><th className={th}>Type</th><th className={th}>Amount</th><th className={th}>When</th></tr></thead>
+              <tbody>{data.transactions.map((t) => (
+                <tr key={t.id} className="border-b border-gray-50">
+                  <td className={td}>{t.profiles?.full_name || t.profiles?.phone || "—"}</td>
+                  <td className={td}>{reasonLabel(t.reason)}</td>
+                  <td className={td}><Pill tone={Number(t.amount) >= 0 ? "green" : "red"}>{Number(t.amount) >= 0 ? "+" : ""}{formatCurrencyFull(Number(t.amount))}</Pill></td>
+                  <td className={`${td} text-gray-400`}>{timeAgo(t.created_at)}</td>
+                </tr>))}</tbody></table></div>
+          )}
+        </SectionCard>
+      )}
     </div>
   );
 }
