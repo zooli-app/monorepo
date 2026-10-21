@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Bell, Shield, Smartphone, Globe, LogOut, ChevronRight, ToggleLeft, ToggleRight, Eye, EyeOff, CheckCircle, Building2 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { api } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 
 type Tab = "notifications" | "security" | "app" | "language" | "business";
 
@@ -68,6 +69,30 @@ export default function SettingsPage() {
     compactView:  false,
   });
   const [autoRejectMins, setAutoRejectMins] = useState(5);
+
+  const [pwdMsg, setPwdMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pwdBusy, setPwdBusy] = useState(false);
+
+  async function handlePwdUpdate() {
+    setPwdMsg(null);
+    if (pwdForm.next.length < 8) return setPwdMsg({ ok: false, text: "New password must be at least 8 characters." });
+    setPwdBusy(true);
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      const email = u.user?.email;
+      if (!email) throw new Error("Session expired. Please sign in again.");
+      const { error: reauth } = await supabase.auth.signInWithPassword({ email, password: pwdForm.current });
+      if (reauth) throw new Error("Current password is incorrect.");
+      const { error } = await supabase.auth.updateUser({ password: pwdForm.next, data: { must_change_password: false } });
+      if (error) throw error;
+      setPwdForm({ current: "", next: "", confirm: "" });
+      setPwdMsg({ ok: true, text: "Password updated." });
+    } catch (e) {
+      setPwdMsg({ ok: false, text: e instanceof Error ? e.message : "Could not update password." });
+    } finally {
+      setPwdBusy(false);
+    }
+  }
 
   async function handleSave() {
     setSaved(true);
@@ -207,10 +232,11 @@ export default function SettingsPage() {
                     <input type="password" className={inp} placeholder="Repeat new password"
                       value={pwdForm.confirm} onChange={e=>setPwdForm(p=>({...p,confirm:e.target.value}))}/>
                   </div>
-                  <button onClick={handleSave} disabled={!pwdForm.current || !pwdForm.next || pwdForm.next !== pwdForm.confirm}
+                  <button onClick={handlePwdUpdate} disabled={pwdBusy || !pwdForm.current || !pwdForm.next || pwdForm.next !== pwdForm.confirm}
                     className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors">
-                    Update Password
+                    {pwdBusy ? "Updating..." : "Update Password"}
                   </button>
+                  {pwdMsg && <p className={pwdMsg.ok ? "text-xs text-emerald-600" : "text-xs text-red-600"}>{pwdMsg.text}</p>}
                 </div>
               </div>
 

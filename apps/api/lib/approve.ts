@@ -1,6 +1,5 @@
 import { randomBytes } from "crypto";
 import { supabaseAdmin } from "./supabase";
-import { decrypt, isEncrypted } from "./crypto";
 
 // What an approved application becomes in the platform.
 //  - business-type services get a vendor login + a store row (category below)
@@ -40,7 +39,7 @@ export async function createAccountForApplication(app: AppRow, loginEmail: strin
 
   const { data: created, error: userErr } = await db.auth.admin.createUser({
     email: loginEmail, password: tempPassword, email_confirm: true,
-    user_metadata: { full_name: app.applicant_name, source: "vendor_application" },
+    user_metadata: { full_name: app.applicant_name, source: "vendor_application", must_change_password: true },
   });
   if (userErr || !created.user) {
     const dup = /already|registered|exists/i.test(userErr?.message ?? "");
@@ -52,18 +51,6 @@ export async function createAccountForApplication(app: AppRow, loginEmail: strin
     const { error: pErr } = await db.from("profiles").insert({ id: userId, role: map.role, full_name: app.applicant_name, phone: app.mobile });
     if (pErr) throw new ApprovalError(/phone|unique|duplicate/i.test(pErr.message) ? 409 : 500,
       /phone|unique|duplicate/i.test(pErr.message) ? "An account with this mobile number already exists." : pErr.message);
-
-    if (app.service === "rides") {
-      // The ride flow reads vehicle + licence from `drivers`; fill it from the application.
-      const d = app.data;
-      const wheeler = str(d.wheelerType), vtype = str(d.vehicleType);
-      const vehicle_type = wheeler.startsWith("2") ? "bike" : wheeler.startsWith("3") ? "auto" : /SUV|Van/i.test(vtype) ? "suv" : "sedan";
-      const lic = typeof d.licenseNumber === "string" && isEncrypted(d.licenseNumber) ? decrypt(d.licenseNumber) : str(d.licenseNumber);
-      const { error: dErr } = await db.from("drivers").insert({
-        id: userId, vehicle_type, vehicle_number: str(d.vehicleRegNumber) || "NA", license_number: lic || "NA",
-      });
-      if (dErr) throw new ApprovalError(500, dErr.message);
-    }
 
     if (map.storeCategory) {
       const d = app.data;

@@ -7,6 +7,8 @@ import { supabase } from "../supabase";
 interface AuthState {
   profile: Profile | null;
   loading: boolean;
+  mustChangePassword: boolean;
+  refresh: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -16,8 +18,11 @@ const AuthContext = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   async function refresh() {
+    const { data } = await supabase.auth.getUser();
+    setMustChangePassword(data.user?.user_metadata?.must_change_password === true);
     const p = await fetchOwnProfile(supabase);
     setProfile(p);
     setLoading(false);
@@ -39,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
   }
 
-  return <AuthContext.Provider value={{ profile, loading, login, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ profile, loading, mustChangePassword, refresh, login, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
@@ -50,10 +55,12 @@ export function useAuth() {
 
 /** Wrap a dashboard layout with this to bounce unauthenticated/wrong-role users to /login. */
 export function useRequireRole(role: "vendor") {
-  const { profile, loading } = useAuth();
+  const { profile, loading, mustChangePassword } = useAuth();
   const router = useRouter();
   useEffect(() => {
-    if (!loading && (!profile || profile.role !== role)) router.replace("/login");
-  }, [loading, profile, role, router]);
-  return { profile, loading };
+    if (loading) return;
+    if (!profile || profile.role !== role) router.replace("/login");
+    else if (mustChangePassword) router.replace("/change-password");
+  }, [loading, profile, role, mustChangePassword, router]);
+  return { profile, loading, mustChangePassword };
 }
