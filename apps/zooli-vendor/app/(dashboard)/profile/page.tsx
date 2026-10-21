@@ -4,6 +4,7 @@ import { Store, MapPin, Phone, Shield, Edit3, Save, CheckCircle, AlertTriangle }
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useStore } from "@/lib/auth/StoreProvider";
 import { fmtDate } from "@/lib/utils";
 import type { Store as StoreRow } from "@zooli/api-client";
 
@@ -11,6 +12,7 @@ type StoreFull = StoreRow & { created_at?: string };
 
 export default function ProfilePage() {
   const { profile } = useAuth();
+  const { refresh: refreshShared } = useStore();
   const [store, setStore] = useState<StoreFull | null>(null);
   const [email, setEmail] = useState("");
   const [orderCount, setOrderCount] = useState(0);
@@ -47,6 +49,7 @@ export default function ProfilePage() {
         zone: form.zone.trim() || undefined,
       });
       setStore((prev) => ({ ...(prev as StoreFull), ...updated }));
+      refreshShared(); // keep sidebar/topbar in sync with the new name
       setSaved(true); setEditing(false);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {

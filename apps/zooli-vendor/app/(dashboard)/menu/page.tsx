@@ -1,25 +1,21 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, X, Leaf, Flame, Star } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, X } from "lucide-react";
 import { fmtFull } from "@/lib/utils";
 import { api } from "@/lib/api";
 import type { Category, Product } from "@zooli/api-client";
 
-// isVeg / isPopular / prepTime aren't in the shared Product schema (it's
-// shared with groceries, which has no such concept) — they stay client-side
-// only, clearly labeled, rather than silently failing to save.
 interface FormState {
   name: string; category_id: string; price: number; description: string;
-  isVeg: boolean; isAvailable: boolean; isPopular: boolean; prepTime: number;
+  isAvailable: boolean;
 }
-const EMPTY: FormState = { name: "", category_id: "", price: 0, description: "", isVeg: true, isAvailable: true, isPopular: false, prepTime: 15 };
+const EMPTY: FormState = { name: "", category_id: "", price: 0, description: "", isAvailable: true };
 
 export default function MenuPage() {
   const [storeId, setStoreId] = useState<string | null>(null);
   const [needsStore, setNeedsStore] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Product[]>([]);
-  const [localFlags, setLocalFlags] = useState<Record<string, { isVeg: boolean; isPopular: boolean; prepTime: number }>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -55,21 +51,16 @@ export default function MenuPage() {
     return matchCat && matchSearch;
   });
   const available = items.filter(i => i.is_available).length;
-  const flags = (id: string) => localFlags[id] ?? { isVeg: true, isPopular: false, prepTime: 15 };
 
   function openAdd() { setForm(EMPTY); setEditItem(null); setShowForm(true); }
   function openEdit(item: Product) {
-    const f = flags(item.id);
-    setForm({ name: item.name, category_id: item.category_id ?? "", price: item.price, description: item.description ?? "", isAvailable: item.is_available, ...f });
+    setForm({ name: item.name, category_id: item.category_id ?? "", price: item.price, description: item.description ?? "", isAvailable: item.is_available });
     setEditItem(item); setShowForm(true);
   }
 
   async function toggleAvail(item: Product) {
     setItems(p => p.map(i => i.id === item.id ? { ...i, is_available: !i.is_available } : i));
     try { await api.vendor.updateProduct(item.id, { is_available: !item.is_available }); } catch { loadAll(); }
-  }
-  function togglePopular(id: string) {
-    setLocalFlags(p => ({ ...p, [id]: { ...flags(id), isPopular: !flags(id).isPopular } }));
   }
   async function deleteItem(id: string) {
     if (!confirm("Remove this item from your menu?")) return;
@@ -86,13 +77,11 @@ export default function MenuPage() {
           name: form.name, price: form.price, description: form.description, category_id: form.category_id || undefined,
         });
         setItems(p => p.map(i => i.id === product.id ? product : i));
-        setLocalFlags(p => ({ ...p, [product.id]: { isVeg: form.isVeg, isPopular: form.isPopular, prepTime: form.prepTime } }));
       } else {
         const { product } = await api.stores.addProduct(storeId, {
           name: form.name, price: form.price, description: form.description, category_id: form.category_id || undefined,
         });
         setItems(p => [product, ...p]);
-        setLocalFlags(p => ({ ...p, [product.id]: { isVeg: form.isVeg, isPopular: form.isPopular, prepTime: form.prepTime } }));
       }
       setShowForm(false);
     } catch (e) {
@@ -149,17 +138,15 @@ export default function MenuPage() {
       {/* Items grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
         {filtered.map(item => {
-          const f = flags(item.id);
           return (
           <div key={item.id} className={`bg-white rounded-2xl border shadow-sm transition-all hover:shadow-md ${item.is_available ? "border-gray-100" : "border-gray-200 opacity-65"}`}>
             <div className="p-4">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {f.isVeg ? <Leaf size={13} className="text-green-600 flex-shrink-0" /> : <Flame size={13} className="text-red-500 flex-shrink-0" />}
                     <span className="text-sm font-bold text-gray-900 truncate">{item.name}</span>
                   </div>
-                  <div className="text-[10px] text-gray-400 mt-0.5 font-medium">{catName(item.category_id)} · {f.prepTime} min prep</div>
+                  <div className="text-[10px] text-gray-400 mt-0.5 font-medium">{catName(item.category_id)}</div>
                 </div>
                 <button onClick={() => toggleAvail(item)} title={item.is_available ? "Mark Unavailable" : "Mark Available"}
                   className={`transition-colors flex-shrink-0 ${item.is_available ? "text-emerald-600 hover:text-emerald-700" : "text-gray-300 hover:text-gray-400"}`}>
@@ -170,11 +157,7 @@ export default function MenuPage() {
               <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">{item.description}</p>
 
               <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-                {f.isPopular && <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">⭐ POPULAR</span>}
                 {!item.is_available && <span className="text-[9px] font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">UNAVAILABLE</span>}
-                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${f.isVeg ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                  {f.isVeg ? "VEG" : "NON-VEG"}
-                </span>
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
@@ -183,10 +166,6 @@ export default function MenuPage() {
                   <span className="text-xs text-gray-400 ml-2">{item.stock_qty} in stock</span>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => togglePopular(item.id)} title="Toggle popular"
-                    className={`p-1.5 rounded-lg transition-colors ${f.isPopular ? "text-amber-500 bg-amber-50" : "text-gray-300 hover:text-amber-400 hover:bg-amber-50"}`}>
-                    <Star size={14} fill={f.isPopular ? "currentColor" : "none"} />
-                  </button>
                   <button onClick={() => openEdit(item)} className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
                     <Pencil size={14} />
                   </button>
@@ -251,17 +230,9 @@ export default function MenuPage() {
                   value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Prep Time (minutes) — demo only, not saved</label>
-                <input type="number" className={inp()} placeholder="15"
-                  value={form.prepTime} onChange={e => setForm(p => ({ ...p, prepTime: Number(e.target.value) }))} />
-              </div>
-
               <div className="space-y-2 pt-1">
                 {([
-                  { key: "isVeg", label: "Vegetarian Item", desc: "Show green leaf indicator — demo only, not saved" },
                   { key: "isAvailable", label: "Available Now", desc: "Customers can order this" },
-                  { key: "isPopular", label: "Mark as Popular", desc: "Show ⭐ popular badge — demo only, not saved" },
                 ] as const).map(({ key, label, desc }) => (
                   <div key={key} className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl border border-gray-100">
                     <div>

@@ -2,7 +2,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, Bell, ChevronDown, Settings, LogOut, User, ToggleLeft, ToggleRight, Search } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { authStorage } from "@/lib/storage";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useStore } from "@/lib/auth/StoreProvider";
 import { api } from "@/lib/api";
 import type { VendorOrder } from "@zooli/api-client";
 
@@ -24,7 +25,11 @@ export function VendorTopbar({ onMenuClick }: { onMenuClick: () => void }) {
 
   const [showProfile, setShowProfile] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const { profile, logout } = useAuth();
+  const { store, email, setOpen } = useStore();
+  const isOpen = store?.is_open ?? false;
+  const ownerName = profile?.full_name || email.split("@")[0] || "Vendor";
+  const ownerInitials = ownerName.split(/\s+/).filter(Boolean).map((w: string) => w[0]).join("").slice(0, 2).toUpperCase() || "V";
 
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef   = useRef<HTMLDivElement>(null);
@@ -69,7 +74,8 @@ export function VendorTopbar({ onMenuClick }: { onMenuClick: () => void }) {
 
         {/* Store open/close toggle */}
         <button
-          onClick={() => setIsOpen(o => !o)}
+          onClick={() => setOpen(!isOpen)}
+          disabled={!store}
           className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex-shrink-0 ${
             isOpen
               ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
@@ -133,11 +139,11 @@ export function VendorTopbar({ onMenuClick }: { onMenuClick: () => void }) {
             className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm flex-shrink-0">
-              <span className="text-white text-xs font-bold">RK</span>
+              <span className="text-white text-xs font-bold">{ownerInitials}</span>
             </div>
             <div className="hidden lg:block text-left">
-              <div className="text-xs font-bold text-gray-800 leading-tight">Ravi Kumar</div>
-              <div className="text-[10px] text-gray-400 leading-tight">Hotel Paradise</div>
+              <div className="text-xs font-bold text-gray-800 leading-tight">{ownerName}</div>
+              <div className="text-[10px] text-gray-400 leading-tight">{store?.name ?? ""}</div>
             </div>
             <ChevronDown size={13} className={`hidden lg:block text-gray-400 transition-transform duration-200 ${showProfile ? "rotate-180" : ""}`} />
           </button>
@@ -148,13 +154,13 @@ export function VendorTopbar({ onMenuClick }: { onMenuClick: () => void }) {
               <div className="px-4 py-4 border-b border-gray-50 bg-gradient-to-br from-amber-50 to-orange-50/50">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm flex-shrink-0">
-                    <span className="text-white font-bold">RK</span>
+                    <span className="text-white font-bold">{ownerInitials}</span>
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-gray-900">Ravi Kumar</div>
-                    <div className="text-[11px] text-gray-400">owner@paradise.in</div>
+                    <div className="text-sm font-bold text-gray-900">{ownerName}</div>
+                    <div className="text-[11px] text-gray-400 break-all">{email}</div>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">VERIFIED</span>
+                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">APPROVED</span>
                     </div>
                   </div>
                 </div>
@@ -177,7 +183,7 @@ export function VendorTopbar({ onMenuClick }: { onMenuClick: () => void }) {
 
               <div className="border-t border-gray-100 py-2">
                 <button
-                  onClick={() => { authStorage.clearToken(); router.push("/login"); }}
+                  onClick={async () => { await logout(); router.replace("/login"); }}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-semibold">
                   <LogOut size={14} className="text-red-500" />
                   Sign Out

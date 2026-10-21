@@ -1,6 +1,7 @@
 "use client";
 import { VendorShell } from "@/components/layout/VendorShell";
 import { useRequireRole } from "@/lib/auth/AuthProvider";
+import { StoreProvider } from "@/lib/auth/StoreProvider";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { profile, loading, mustChangePassword } = useRequireRole("vendor");
@@ -13,5 +14,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  return <VendorShell>{children}</VendorShell>;
+  return (
+    <StoreProvider>
+      <VendorShell>{children}</VendorShell>
+    </StoreProvider>
+  );
 }

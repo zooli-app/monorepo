@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
+import { useStore } from "@/lib/auth/StoreProvider";
 
 const NAV = [
   { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard" },
@@ -24,6 +25,9 @@ interface Props { collapsed: boolean; onToggleCollapse: () => void; onClose: () 
 
 export function VendorSidebar({ collapsed, onToggleCollapse, onClose }: Props) {
   const pathname = usePathname();
+  const { store } = useStore();
+  const storeName = store?.name ?? "";
+  const initials = storeName.split(/\s+/).filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "•";
   const unreadNotifs = 0; // no notifications backend yet
   const [newOrders, setNewOrders] = useState(0);
   useEffect(() => {
@@ -62,18 +66,22 @@ export function VendorSidebar({ collapsed, onToggleCollapse, onClose }: Props) {
         <div className="mx-3 mt-3 mb-1 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-2xl flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-sm">
-              HP
+              {initials}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold text-gray-900 truncate">Hotel Paradise</div>
+              <div className="text-xs font-bold text-gray-900 truncate">{storeName || "Loading..."}</div>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[10px] font-semibold text-amber-600">⭐ 4.7</span>
-                <span className="text-gray-300">·</span>
-                <span className="text-[10px] text-gray-400">Food & Beverages</span>
+                {(store?.rating_count ?? 0) > 0 && (
+                  <>
+                    <span className="text-[10px] font-semibold text-amber-600">⭐ {store?.rating_avg}</span>
+                    <span className="text-gray-300">·</span>
+                  </>
+                )}
+                <span className="text-[10px] text-gray-400 capitalize truncate">{(store?.category ?? "").replace(/_/g, " ")}</span>
               </div>
             </div>
             <div className="flex-shrink-0">
-              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">OPEN</span>
+              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${store?.is_open ? "text-emerald-700 bg-emerald-100 border-emerald-200" : "text-gray-600 bg-gray-100 border-gray-200"}`}>{store?.is_open ? "OPEN" : "CLOSED"}</span>
             </div>
           </div>
         </div>
