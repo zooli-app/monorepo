@@ -5,10 +5,6 @@ import {
   CheckCircle, XCircle, AlertCircle, ChevronRight, Package,
 } from "lucide-react";
 import { DynWeeklyRevenue, DynWeeklyOrders } from "@/components/dashboard/DynamicCharts";
-// Reviews/rating/weekly-revenue-chart have no backend yet (no reviews table,
-// no analytics aggregation endpoint) — those specific sections stay on demo
-// data, clearly labeled below. Orders are 100% real.
-import { revenueWeekData } from "@/lib/mock-data";
 import { fmt, fmtFull, timeAgo } from "@/lib/utils";
 import { api } from "@/lib/api";
 import type { VendorOrder } from "@zooli/api-client";
@@ -31,7 +27,7 @@ const STATUS_LABEL: Record<string, string> = {
 export default function DashboardPage() {
   const [orders, setOrders] = useState<VendorOrder[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [store, setStore] = useState<{ rating_avg?: number; rating_count?: number } | null>(null);
+  const [store, setStore] = useState<{ rating_avg?: number; rating_count?: number; commission_rate?: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,14 +40,32 @@ export default function DashboardPage() {
     ).finally(() => setLoading(false));
   }, []);
 
-  const todayOrders  = orders.filter(o => o.status !== "cancelled");
+  const sameDay = (iso: string, d: Date) => new Date(iso).toDateString() === d.toDateString();
+  const todayOrders  = orders.filter(o => o.status !== "cancelled" && sameDay(o.created_at, new Date()));
   const activeOrders = orders.filter(o => ["pending","confirmed","preparing","ready_for_pickup","out_for_delivery"].includes(o.status));
   const newOrders    = orders.filter(o => o.status === "pending");
-  const COMMISSION_RATE = 0.15;
-  const todayRev     = todayOrders.reduce((a, o) => a + o.total * (1 - COMMISSION_RATE), 0);
-  const weekRevTotal = revenueWeekData.reduce((a, d) => a + d.revenue, 0); // demo data — no analytics endpoint yet
+  const COMMISSION_RATE = (store?.commission_rate ?? 15) / 100;
+  const net = (o: VendorOrder) => o.total * (1 - COMMISSION_RATE);
+  const todayRev     = todayOrders.reduce((a, o) => a + net(o), 0);
 
-  const topItem = { name: "Chicken Biryani", orders: 284, revenue: 51120 }; // demo data
+  // Last 7 days (oldest -> today), built from the vendor's real orders.
+  const weekData = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i));
+    const day = orders.filter(o => o.status !== "cancelled" && sameDay(o.created_at, d));
+    return { day: d.toLocaleDateString("en-IN", { weekday: "short" }), revenue: Math.round(day.reduce((a, o) => a + net(o), 0)), orders: day.length };
+  });
+  const weekRevTotal = weekData.reduce((a, d) => a + d.revenue, 0);
+  const weekOrderTotal = weekData.reduce((a, d) => a + d.orders, 0);
+
+  // Top items by quantity sold today, from order_items.
+  const itemMap = new Map<string, { name: string; orders: number; revenue: number }>();
+  todayOrders.forEach(o => (o.order_items ?? []).forEach(it => {
+    const cur = itemMap.get(it.name) ?? { name: it.name, orders: 0, revenue: 0 };
+    cur.orders += it.qty; cur.revenue += it.qty * it.unit_price;
+    itemMap.set(it.name, cur);
+  }));
+  const topItems = [...itemMap.values()].sort((a, b) => b.orders - a.orders).slice(0, 4);
+  const topItem = topItems[0];
 
   if (loading) {
     return <div className="flex items-center justify-center py-24"><div className="w-8 h-8 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" /></div>;
@@ -85,8 +99,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
           { label: "Today's Orders",   value: todayOrders.length.toString(), sub: `${activeOrders.length} active now`,          icon: ShoppingBag,  grad: "from-purple-500 to-purple-700" },
-          { label: "Today's Earnings", value: fmt(todayRev),                 sub: "After 15% commission",                       icon: IndianRupee,   grad: "from-emerald-400 to-emerald-600" },
-          { label: "This Week",        value: fmt(weekRevTotal),             sub: "355 orders total",                           icon: TrendingUp,    grad: "from-blue-400 to-blue-600" },
+          { label: "Today's Earnings", value: fmt(todayRev),                 sub: `After ${Math.round(COMMISSION_RATE * 100)}% commission`,                       icon: IndianRupee,   grad: "from-emerald-400 to-emerald-600" },
+          { label: "This Week",        value: fmt(weekRevTotal),             sub: `${weekOrderTotal} orders total`,                           icon: TrendingUp,    grad: "from-blue-400 to-blue-600" },
           { label: "Your Rating",      value: `${store?.rating_avg ?? 0} ⭐`,          sub: `${store?.rating_count ?? 0} reviews`,              icon: Star,          grad: "from-amber-400 to-orange-500" },
         ].map(c => {
           const Icon = c.icon;
@@ -136,16 +150,13 @@ export default function DashboardPage() {
               <div className="text-sm font-bold text-gray-900">Revenue This Week</div>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xl font-bold text-gray-900">{fmt(weekRevTotal)}</span>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                  <TrendingUp size={10} /> +12.4%
-                </span>
               </div>
             </div>
             <a href="/earnings" className="text-xs text-purple-600 font-semibold hover:underline flex items-center gap-0.5">
               Details <ChevronRight size={12} />
             </a>
           </div>
-          <div className="h-48 mt-3"><DynWeeklyRevenue /></div>
+          <div className="h-48 mt-3"><DynWeeklyRevenue data={weekData} /></div>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -153,14 +164,14 @@ export default function DashboardPage() {
             <div>
               <div className="text-sm font-bold text-gray-900">Orders This Week</div>
               <div className="text-xl font-bold text-gray-900 mt-0.5">
-                355 <span className="text-xs font-normal text-gray-400">total orders</span>
+                {weekOrderTotal} <span className="text-xs font-normal text-gray-400">total orders</span>
               </div>
             </div>
             <a href="/orders" className="text-xs text-purple-600 font-semibold hover:underline flex items-center gap-0.5">
               Details <ChevronRight size={12} />
             </a>
           </div>
-          <div className="h-48 mt-3"><DynWeeklyOrders /></div>
+          <div className="h-48 mt-3"><DynWeeklyOrders data={weekData} /></div>
         </div>
       </div>
 
@@ -209,29 +220,31 @@ export default function DashboardPage() {
           {/* Top item */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="text-sm font-bold text-gray-900 mb-3">🏆 Top Item Today</div>
-            <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
-              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Package size={18} className="text-amber-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-gray-900 truncate">{topItem.name}</div>
-                <div className="text-xs text-gray-500">{topItem.orders} orders today</div>
-              </div>
-              <div className="text-sm font-bold text-emerald-600">{fmt(topItem.revenue)}</div>
-            </div>
-            <div className="mt-3 space-y-2">
-              {[
-                { name: "Veg Biryani",   count: 198 },
-                { name: "Veg Thali",     count: 145 },
-                { name: "Chicken Curry", count: 132 },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="text-xs text-gray-400 w-4">{i + 2}.</span>
-                  <span className="text-xs text-gray-700 flex-1 truncate">{item.name}</span>
-                  <span className="text-xs font-semibold text-gray-900">{item.count}</span>
+            {topItem ? (
+              <>
+                <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Package size={18} className="text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-gray-900 truncate">{topItem.name}</div>
+                    <div className="text-xs text-gray-500">{topItem.orders} sold today</div>
+                  </div>
+                  <div className="text-sm font-bold text-emerald-600">{fmt(topItem.revenue)}</div>
                 </div>
-              ))}
-            </div>
+                <div className="mt-3 space-y-2">
+                  {topItems.slice(1).map((item, i) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400 w-4">{i + 2}.</span>
+                      <span className="text-xs text-gray-700 flex-1 truncate">{item.name}</span>
+                      <span className="text-xs font-semibold text-gray-900">{item.orders}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-4">No items sold today yet.</p>
+            )}
           </div>
 
           {/* Latest reviews */}

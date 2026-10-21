@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -6,7 +7,7 @@ import {
   Star, UserCircle, Bell, Settings, ChevronLeft, ChevronRight, X, HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { notifications } from "@/lib/mock-data";
+import { api } from "@/lib/api";
 
 const NAV = [
   { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard" },
@@ -23,8 +24,11 @@ interface Props { collapsed: boolean; onToggleCollapse: () => void; onClose: () 
 
 export function VendorSidebar({ collapsed, onToggleCollapse, onClose }: Props) {
   const pathname = usePathname();
-  const unreadNotifs = notifications.filter(n => !n.read).length;
-  const newOrders = 2; // mock
+  const unreadNotifs = 0; // no notifications backend yet
+  const [newOrders, setNewOrders] = useState(0);
+  useEffect(() => {
+    api.vendor.orders().then(r => setNewOrders(r.orders.filter(o => o.status === "pending").length)).catch(() => {});
+  }, [pathname]);
 
   const getBadge = (key?: string) => {
     if (key === "orders") return newOrders > 0 ? newOrders.toString() : null;
