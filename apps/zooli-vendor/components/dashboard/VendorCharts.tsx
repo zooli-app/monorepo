@@ -3,8 +3,7 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine,
 } from "recharts";
-import { revenueMonthData } from "@/lib/mock-data";
-
+export interface MonthPoint { week: string; revenue: number; orders: number }
 export interface WeekPoint { day: string; revenue: number; orders: number }
 
 const n = (v: unknown): number => (typeof v === "number" ? v : 0);
@@ -40,7 +39,7 @@ export function WeeklyOrdersChart({ data: revenueWeekData }: { data: WeekPoint[]
         <Tooltip contentStyle={ts} formatter={(v) => [n(v), "Orders"]} />
         <Bar dataKey="orders" radius={[5, 5, 0, 0]}>
           {revenueWeekData.map((_, i) => (
-            <Cell key={i} fill={i === 5 ? "#F59E0B" : "#C4B5FD"} />
+            <Cell key={i} fill={i === revenueWeekData.length - 1 ? "#F59E0B" : "#C4B5FD"} />
           ))}
         </Bar>
       </BarChart>
@@ -48,7 +47,7 @@ export function WeeklyOrdersChart({ data: revenueWeekData }: { data: WeekPoint[]
   );
 }
 
-export function MonthlyRevenueChart() {
+export function MonthlyRevenueChart({ data: revenueMonthData }: { data: MonthPoint[] }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={revenueMonthData} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>

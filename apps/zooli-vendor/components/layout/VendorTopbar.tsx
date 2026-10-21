@@ -3,7 +3,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, Bell, ChevronDown, Settings, LogOut, User, ToggleLeft, ToggleRight, Search } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { authStorage } from "@/lib/storage";
-import { notifications } from "@/lib/mock-data";
+import { api } from "@/lib/api";
+import type { VendorOrder } from "@zooli/api-client";
 
 const TITLES: Record<string, { title: string; sub: string }> = {
   "/dashboard":     { title: "Dashboard",           sub: "Overview of your business today" },
@@ -28,7 +29,14 @@ export function VendorTopbar({ onMenuClick }: { onMenuClick: () => void }) {
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef   = useRef<HTMLDivElement>(null);
 
-  const unread = notifications.filter(n => !n.read);
+  const [recent, setRecent] = useState<VendorOrder[]>([]);
+  useEffect(() => {
+    const load = () => api.vendor.orders().then(r => setRecent(r.orders)).catch(() => {});
+    load();
+    const t = setInterval(load, 60000);
+    return () => clearInterval(t);
+  }, []);
+  const unread = recent.filter(o => o.status === "pending");
 
   useEffect(() => {
     const fn = (e: MouseEvent) => {
@@ -38,21 +46,6 @@ export function VendorTopbar({ onMenuClick }: { onMenuClick: () => void }) {
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
-
-  const notifIcon = (type: string) => {
-    if (type === "order")  return "🛍️";
-    if (type === "payout") return "💰";
-    if (type === "review") return "⭐";
-    if (type === "promo")  return "🎯";
-    return "🔔";
-  };
-  const notifBg = (type: string) => {
-    if (type === "order")  return "bg-blue-100";
-    if (type === "payout") return "bg-green-100";
-    if (type === "review") return "bg-amber-100";
-    if (type === "promo")  return "bg-purple-100";
-    return "bg-gray-100";
-  };
 
   return (
     <header className="bg-white border-b border-gray-100 shadow-sm flex-shrink-0 z-20">
@@ -106,24 +99,22 @@ export function VendorTopbar({ onMenuClick }: { onMenuClick: () => void }) {
             <div className="absolute right-0 top-12 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
                 <span className="text-sm font-bold text-gray-900">Notifications</span>
-                <button className="text-xs text-purple-600 font-semibold hover:underline">Mark all read</button>
               </div>
               <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
-                {notifications.slice(0, 6).map(n => (
-                  <div key={n.id} className={`flex gap-3 px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer ${!n.read ? "bg-blue-50/30" : ""}`}>
-                    <div className={`w-8 h-8 rounded-xl ${notifBg(n.type)} flex items-center justify-center text-sm flex-shrink-0`}>
-                      {notifIcon(n.type)}
-                    </div>
+                {recent.slice(0, 6).map(o => (
+                  <div key={o.id} className={`flex gap-3 px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer ${o.status === "pending" ? "bg-blue-50/30" : ""}`}
+                    onClick={() => { router.push("/orders"); setShowNotif(false); }}>
+                    <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-sm flex-shrink-0">🛍️</div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
-                        {n.title}
-                        {!n.read && <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />}
+                        {o.status === "pending" ? "New order received" : `Order ${o.status.replace(/_/g, " ")}`}
+                        {o.status === "pending" && <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />}
                       </div>
-                      <div className="text-[11px] text-gray-400 truncate">{n.body}</div>
+                      <div className="text-[11px] text-gray-400 truncate">#{o.id.slice(0, 8)} · ₹{o.total}</div>
                     </div>
-                    <div className="text-[10px] text-gray-400 flex-shrink-0 whitespace-nowrap">{n.time.slice(11, 16)}</div>
                   </div>
                 ))}
+                {recent.length === 0 && <div className="px-4 py-8 text-center text-xs text-gray-400">No notifications yet</div>}
               </div>
               <div className="px-4 py-2.5 border-t border-gray-50 text-center">
                 <button onClick={() => { router.push("/notifications"); setShowNotif(false); }}

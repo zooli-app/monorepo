@@ -5,9 +5,7 @@ import { timeAgo } from "@/lib/utils";
 import { api } from "@/lib/api";
 import type { Review } from "@zooli/api-client";
 
-// Sentiment classification and vendor replies from the original mock design
-// don't exist in the backend (no NLP pipeline, no reviews.reply column) —
-// this shows every real field instead: rating, comment, reviewer, and date.
+// Shows every real review field: rating, comment, reviewer, and date.
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
